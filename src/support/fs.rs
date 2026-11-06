@@ -11,10 +11,10 @@ use uuid::Uuid;
 use crate::support::machine::{host_name, is_process_running};
 use crate::support::path::{filesystem_object_identity, open_file_identity};
 
-pub const TOOL_NAME: &str = "v8-runner";
+pub const TOOL_NAME: &str = "v8-legacy-runner";
 
 pub fn is_known_tool_name(tool: &str) -> bool {
-    tool == TOOL_NAME
+    crate::legacy::is_known_tool_name(tool)
 }
 
 #[cfg(test)]

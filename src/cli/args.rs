@@ -2,7 +2,7 @@ use clap::{Args, Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "v8-runner",
+    name = "v8-legacy-runner",
     version,
     about = "Run 1C:Enterprise push, test, pull, convert, and launch workflows"
 )]

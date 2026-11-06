@@ -75,7 +75,7 @@ pub const TEST_AGENT_IDLE_MS: &str = "10000";
 /// попадают в каталог состояния пользователя, не встречаются с ним и друг с другом — предел
 /// живых агентов у каждого теста свой.
 pub fn v8_runner_command() -> Command {
-    let mut command = Command::cargo_bin("v8-runner").expect("binary");
+    let mut command = Command::cargo_bin("v8-legacy-runner").expect("binary");
     command
         .env("V8_RUNNER_STATE_DIR", test_state_dir())
         .env("V8_RUNNER_AGENT_IDLE_MS", TEST_AGENT_IDLE_MS);
@@ -99,7 +99,7 @@ pub fn test_state_dir() -> PathBuf {
 }
 
 pub fn v8_runner_binary() -> PathBuf {
-    assert_cmd::cargo::cargo_bin("v8-runner")
+    assert_cmd::cargo::cargo_bin("v8-legacy-runner")
 }
 
 /// Поддельные утилиты платформы пишутся как shell-скрипты, поэтому живут только под

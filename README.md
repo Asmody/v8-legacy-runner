@@ -1,6 +1,11 @@
-# v8-runner
+# v8-legacy-runner
 
-> **Maintained fork.** This repository is developed and released by
+> **`v8-legacy-runner`** — форк [`v8-runner`](https://github.com/IngvarConsulting/v8-runner-rust),
+> поддерживающий платформы 1С 8.3.12–8.3.23 (апстрим держит минимум 8.3.24).
+> CLI и конфигурация совпадают с апстримом; дельта описана в
+> [`FORK_NOTICE.md`](FORK_NOTICE.md) и [`src/legacy/mod.rs`](src/legacy/mod.rs).
+
+> **Maintained fork.** This repository is developed and released by This repository is developed and released by
 > [Ingvar Consulting](https://github.com/IngvarConsulting). It was forked from
 > [`alkoleft/v8-runner-rust`](https://github.com/alkoleft/v8-runner-rust) on
 > 2026-09-02. See [FORK_NOTICE.md](FORK_NOTICE.md) for provenance, modification,
