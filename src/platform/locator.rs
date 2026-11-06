@@ -73,13 +73,13 @@ pub struct PlatformVersion {
 }
 
 /// Первая поддерживаемая платформа (`INV.PLATFORM.A-PLATFORM-BELOW-THE-MINIMUM-IS-REFUSED`):
-/// решение владельца, граница проверена запуском всех исполнителей (замер «Раннер на
-/// 8.3.24–8.3.26»). Ниже неё у `push` нет частичной загрузки, а незнакомая команда может
+/// у апстрима 8.3.24; у форка — 8.3.12 (УТ10), знание пола — `crate::legacy::floor`.
+/// Ниже неё у `push` нет частичной загрузки, а незнакомая команда может
 /// не отказать, а зависнуть.
 pub const MINIMUM_PLATFORM: PlatformVersion = PlatformVersion {
     major: 8,
     minor: 3,
-    patch: 24,
+    patch: 12,
     build: 0,
 };
 
@@ -3172,8 +3172,8 @@ mod tests {
         );
     }
 
-    /// Минимум проверяет сам поиск: 8.3.23 не выдаётся ни одной утилитой платформы, отказ
-    /// называет версию, путь и минимум, а 8.3.24 проходит.
+    /// Минимум проверяет сам поиск: 8.3.11 не выдаётся ни одной утилитой платформы, отказ
+    /// называет версию, путь и минимум, а 8.3.12 проходит.
     #[test]
     fn a_platform_below_the_minimum_is_refused_and_the_minimum_is_accepted() {
         for utility in [
@@ -3184,8 +3184,8 @@ mod tests {
         ] {
             let dir = tempdir().expect("tempdir");
             let root = dir.path().join("platform");
-            let old = touch_versioned_platform_executable(&root, "8.3.23.9999", utility, true);
-            let accepted = touch_versioned_platform_executable(&root, "8.3.24.1", utility, true);
+            let old = touch_versioned_platform_executable(&root, "8.3.11.9999", utility, true);
+            let accepted = touch_versioned_platform_executable(&root, "8.3.12.1", utility, true);
             let locator_for = |version: &str| {
                 Locator::with_roots(
                     None,
@@ -3197,7 +3197,7 @@ mod tests {
                 )
             };
 
-            let error = locator_for("8.3.23")
+            let error = locator_for("8.3.11")
                 .locate(utility)
                 .expect_err("below the minimum");
             assert_eq!(
@@ -3205,14 +3205,14 @@ mod tests {
                 LocatorError::BelowMinimumPlatform {
                     utility,
                     path: canonical(&old),
-                    found: PlatformVersion::parse_strict("8.3.23.9999").expect("version"),
+                    found: PlatformVersion::parse_strict("8.3.11.9999").expect("version"),
                 }
             );
             let message = error.to_string();
-            assert!(message.contains("8.3.23.9999"), "{message}");
-            assert!(message.contains("platform 8.3.24 and newer"), "{message}");
+            assert!(message.contains("8.3.11.9999"), "{message}");
+            assert!(message.contains("platform 8.3.12 and newer"), "{message}");
 
-            let location = locator_for("8.3.24").locate(utility).expect("the minimum");
+            let location = locator_for("8.3.12").locate(utility).expect("the minimum");
             assert_eq!(location.path, canonical(&accepted));
         }
     }
@@ -3221,7 +3221,7 @@ mod tests {
     #[test]
     fn an_explicit_path_does_not_bypass_the_minimum() {
         let dir = tempdir().expect("tempdir");
-        let install = dir.path().join("8.3.12.1855");
+        let install = dir.path().join("8.3.11.1855");
         let binary = install.join("bin").join(UtilityType::V8.executable_name());
         touch_executable(&binary);
 

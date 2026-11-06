@@ -93,12 +93,12 @@ fn dump_preview(config: &Path, dir: &Path) -> Output {
     )
 }
 
-/// 8.3.23 отказывает родом `environment`, называя версию и минимум, и не запускается; 8.3.24
+/// 8.3.11 отказывает родом `environment`, называя версию и минимум, и не запускается; 8.3.12
 /// принимается той же командой.
 #[test]
 fn a_platform_below_the_minimum_is_refused_before_it_starts() {
     let dir = temp_workspace();
-    let config = project(dir.path(), "8.3.23.9999", "");
+    let config = project(dir.path(), "8.3.11.9999", "");
 
     let output = dump_preview(&config, dir.path());
 
@@ -109,12 +109,12 @@ fn a_platform_below_the_minimum_is_refused_before_it_starts() {
         "{answer}"
     );
     let message = answer["error"]["message"].as_str().expect("message");
-    assert!(message.contains("8.3.23.9999"), "{message}");
-    assert!(message.contains("platform 8.3.24 and newer"), "{message}");
+    assert!(message.contains("8.3.11.9999"), "{message}");
+    assert!(message.contains("platform 8.3.12 and newer"), "{message}");
     assert!(!dir.path().join("ran").exists(), "the platform was started");
 
     let dir = temp_workspace();
-    let config = project(dir.path(), "8.3.24.1819", "");
+    let config = project(dir.path(), "8.3.12.1819", "");
     let output = dump_preview(&config, dir.path());
     assert!(output.status.success(), "{output:?}");
     assert_eq!(envelope(&output)["ok"], true);
@@ -125,14 +125,14 @@ fn a_platform_below_the_minimum_is_refused_before_it_starts() {
 #[test]
 fn platforms_name_an_installation_below_the_minimum_and_do_not_select_it() {
     let dir = temp_workspace();
-    let config = project(dir.path(), "8.3.23.9999", "");
+    let config = project(dir.path(), "8.3.11.9999", "");
 
     let output = run(&config, &["platforms"]);
 
     assert!(output.status.success(), "{output:?}");
     let answer = envelope(&output);
     assert_eq!(
-        answer["data"]["installations"][0]["version"], "8.3.23.9999",
+        answer["data"]["installations"][0]["version"], "8.3.11.9999",
         "{answer}"
     );
     assert_eq!(
@@ -147,7 +147,7 @@ fn platforms_name_an_installation_below_the_minimum_and_do_not_select_it() {
             .iter()
             .any(|warning| warning
                 .as_str()
-                .is_some_and(|w| w.contains("platform 8.3.24 and newer"))),
+                .is_some_and(|w| w.contains("platform 8.3.12 and newer"))),
         "{answer}"
     );
 }
@@ -157,7 +157,7 @@ fn platforms_name_an_installation_below_the_minimum_and_do_not_select_it() {
 #[test]
 fn a_restore_below_8_3_27_takes_the_designer_and_from_8_3_27_the_agent() {
     for (version, selected) in [
-        ("8.3.24.1819", "designer"),
+        ("8.3.12.1819", "designer"),
         ("8.3.26.1656", "designer"),
         ("8.3.27.2342", "agent"),
         ("8.5.1.1529", "agent"),
@@ -230,7 +230,7 @@ fn an_assigned_agent_below_8_3_27_refuses_the_restore_with_the_reason() {
 #[test]
 fn status_deep_and_a_push_without_memory_name_the_minimum_as_a_reason() {
     let dir = temp_workspace();
-    let config = project(dir.path(), "8.3.23.9999", "");
+    let config = project(dir.path(), "8.3.11.9999", "");
 
     let output = run(&config, &["status", "--deep"]);
     assert!(output.status.success(), "{output:?}");
@@ -238,7 +238,7 @@ fn status_deep_and_a_push_without_memory_name_the_minimum_as_a_reason() {
     let reason = answer["data"]["infobases"][0]["source_sets"][0]["base"]["reason"]
         .as_str()
         .expect("reason");
-    assert!(reason.contains("platform 8.3.24 and newer"), "{answer}");
+    assert!(reason.contains("platform 8.3.12 and newer"), "{answer}");
 
     let output = run(&config, &["push"]);
     assert_eq!(output.status.code(), Some(3), "{output:?}");
@@ -250,7 +250,7 @@ fn status_deep_and_a_push_without_memory_name_the_minimum_as_a_reason() {
     assert!(
         skipped.iter().any(|skip| skip["reason"]
             .as_str()
-            .is_some_and(|reason| reason.contains("platform 8.3.24 and newer"))),
+            .is_some_and(|reason| reason.contains("platform 8.3.12 and newer"))),
         "{answer}"
     );
 
