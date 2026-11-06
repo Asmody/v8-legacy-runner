@@ -3,6 +3,7 @@
 use std::path::Path;
 use std::time::Duration;
 
+use crate::domain::capability::Provider;
 use crate::platform::locator::PlatformVersion;
 
 /// Платформа, первой знающая команду поколения: `/GetConfigGenerationID` пакетного
@@ -50,6 +51,18 @@ pub fn probe_precheck(binary: &Path) -> Option<Option<String>> {
         "the probe is not asked: the platform knows no generation command"
     );
     Some(None)
+}
+
+/// Пользовательский текст несверенности: обмен идёт, но сверить поколение не с чем.
+pub const UNCHECKED_GENERATION_NOTE: &str =
+    "the configuration generation is not checked: the tool gave no answer";
+
+/// Несверенное поколение видно
+/// (`INV.USE-CASES.WITHOUT-A-GENERATION-ANSWER-A-NO-MEMORY-REFUSAL-OFFERS-PULL-FORCE`,
+/// замечания ревью PR #503): база не ответила поколением — обмен идёт, но в журнал идёт
+/// громкое предупреждение. Ветка Force сюда не доходит: она возвращается до чтения токена.
+pub fn warn_unchecked(set: &str, tool: Provider) {
+    tracing::warn!(set, tool = ?tool, "{}", UNCHECKED_GENERATION_NOTE);
 }
 
 #[cfg(test)]
@@ -111,6 +124,12 @@ mod tests {
             knows_generation_id(&nested),
             "the deepest version-like component wins"
         );
+    }
+
+    /// Предупреждение о несверенном поколении громкое и называет суть.
+    #[test]
+    fn the_unchecked_generation_warning_names_the_unanswered_base() {
+        assert!(super::UNCHECKED_GENERATION_NOTE.contains("not checked"));
     }
 
     /// Версии в пути нет — судить не по чему, зонд запускается (защищён `PROBE_CAP`).

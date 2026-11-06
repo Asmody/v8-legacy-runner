@@ -654,6 +654,7 @@ impl<'a> GenerationGate<'a> {
             return Ok(BeforeLoad::Unchecked);
         };
         let Some(token) = read()? else {
+            crate::legacy::generation::warn_unchecked(set.name(), tool);
             return Ok(BeforeLoad::Unchecked);
         };
         match predict(Some(&record), Some((tool, &token))) {
