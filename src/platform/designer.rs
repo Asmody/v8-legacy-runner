@@ -431,12 +431,8 @@ impl<'a> DesignerDsl<'a> {
         if self.log_file.is_none() {
             return Ok(None);
         }
-        if !crate::platform::generation::knows_generation_id(&self.binary) {
-            tracing::debug!(
-                binary = %self.binary.display(),
-                "the platform knows no generation command: the probe is not asked"
-            );
-            return Ok(None);
+        if let Some(answer) = crate::legacy::generation::probe_precheck(&self.binary) {
+            return Ok(answer);
         }
         let mut args = self.base_args();
         args.push("/GetConfigGenerationID".to_owned());

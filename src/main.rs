@@ -5,6 +5,7 @@ mod command_data;
 mod command_envelope;
 mod config;
 mod domain;
+mod legacy;
 mod mcp;
 mod output;
 mod parsers;

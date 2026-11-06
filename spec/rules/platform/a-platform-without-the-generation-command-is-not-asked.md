@@ -1,7 +1,7 @@
 ---
 id: INV.PLATFORM.A-PLATFORM-WITHOUT-THE-GENERATION-COMMAND-IS-NOT-ASKED
 check:
-  - src/platform/generation.rs::a_platform_older_than_8_3_20_knows_no_generation_command
+  - src/legacy/generation.rs::a_platform_older_than_8_3_20_knows_no_generation_command
   - src/platform/designer.rs::a_platform_without_the_generation_command_is_not_asked
   - src/platform/ibcmd.rs::a_platform_without_the_generation_command_is_not_asked
 ---
@@ -16,7 +16,9 @@ generation-id` режима агента — реализована в 8.3.20 (�
 Такой запуск — не отказ и не отсутствие ответа, которых ждёт разбор, а зависание, —
 поэтому вопрос не задают вовсе.
 
-Версия платформы читается из пути утилиты, как её читает и поиск утилит; версии в пути нет —
+Версия платформы читается из пути утилиты, как её читает и поиск утилит; знание порога и
+пречек зонда живёт в дельте форка — `src/legacy/generation.rs` (швы в
+`config_generation_id` обоих DSL). Версии в пути нет —
 вопрос задают: от запуска без конца чтение защищено собственным пределом
 (`INV.USE-CASES.A-GENERATION-READ-DECLARES-ITS-OWN-CAP`), а у `ibcmd` незнакомая подкоманда
 и так отвечает отказом.

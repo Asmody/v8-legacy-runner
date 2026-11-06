@@ -7,7 +7,7 @@
 //! (`agent_session::generation_id`). Что ответ значит для обмена, решает
 //! `exchange_guard::predict`.
 //!
-//! Чтение объявляет собственный предел (`GENERATION_PROBE_CAP`,
+//! Чтение объявляет собственный предел (`crate::legacy::generation::PROBE_CAP`,
 //! `INV.USE-CASES.A-GENERATION-READ-DECLARES-ITS-OWN-CAP`): это вопрос, а не работа, а у
 //! платформы, которой команда поколения не знакома, запуск Конфигуратора конца не имеет —
 //! без своего предела чтение держало бы команду вечно. Снятый по пределу запуск —
@@ -35,8 +35,6 @@ use crate::use_cases::context::{ExecutionContext, InterruptionSafetyClass};
 /// секунды — отдельным процессом за четыре и больше
 /// ([замер](../../references/1c/confirmed-runtime-measurements.md)); предел много больше, а
 /// у платформы без команды поколения снятый им запуск конца не имел бы вовсе.
-const GENERATION_PROBE_CAP: Duration = Duration::from_secs(30);
-
 /// Процесс, который спрашивает поколение.
 pub(crate) enum GenerationProcess<'a> {
     /// Конфигуратор пишет ответ в `/Out`; `log_file` — этот файл.
@@ -57,7 +55,7 @@ pub(crate) enum GenerationProcess<'a> {
 /// Поколение основной конфигурации или расширения `extension`; `None` — ответа нет. После
 /// отмены процесс не запускается: ответа нет. `process` собирается только после проверки
 /// отмены — его файлы и каталоги после отмены не создаются. Запуск, снятый собственным
-/// пределом шага (`GENERATION_PROBE_CAP`), — тоже отсутствие ответа, а не отказ.
+/// пределом шага (`crate::legacy::generation::PROBE_CAP`), — тоже отсутствие ответа, а не отказ.
 pub(crate) fn read_generation<'a>(
     context: &ExecutionContext,
     config: &AppConfig,
@@ -74,7 +72,7 @@ pub(crate) fn read_generation<'a>(
     }
     let policy = context.process_policy(
         InterruptionSafetyClass::GracefulThenKill,
-        Some(GENERATION_PROBE_CAP),
+        Some(crate::legacy::generation::PROBE_CAP),
     );
     match process()? {
         GenerationProcess::Designer {
@@ -300,7 +298,7 @@ pub(crate) fn designer_log_file(config: &AppConfig, name: &str) -> Result<PathBu
 
 #[cfg(test)]
 mod tests {
-    use super::{designer_log_file, read_generation, GenerationProcess, GENERATION_PROBE_CAP};
+    use super::{designer_log_file, read_generation, GenerationProcess};
     use crate::config::loader::load_config;
     use crate::config::model::{AppConfig, InfobaseSelector};
     use crate::platform::process::{
@@ -382,7 +380,7 @@ mod tests {
     }
 
     /// Предел чтения поколения объявляет сам шаг: политика, с которой запускается
-    /// Конфигуратор, несёт `GENERATION_PROBE_CAP`, а не наследует срок команды
+    /// Конфигуратор, несёт `crate::legacy::generation::PROBE_CAP`, а не наследует срок команды
     /// (`DEC.2026-09-20.A-COMMAND-HAS-NO-DEADLINE`). Если предел убрать, тест падает.
     #[test]
     fn the_generation_read_declares_its_own_cap() {
@@ -410,7 +408,7 @@ mod tests {
         .expect("a successful run of the probe");
 
         let policy = runner.0.borrow().as_ref().expect("the probe ran").clone();
-        assert_eq!(policy.timeout, Some(GENERATION_PROBE_CAP));
+        assert_eq!(policy.timeout, Some(crate::legacy::generation::PROBE_CAP));
         assert_eq!(policy.safety, ProcessInterruptionSafety::GracefulThenKill);
         assert_eq!(answer, None, "the platform log is missing: no answer");
     }
@@ -474,7 +472,7 @@ mod tests {
         .expect("a successful run of the probe");
 
         let policy = runner.0.borrow().as_ref().expect("the probe ran").clone();
-        assert_eq!(policy.timeout, Some(GENERATION_PROBE_CAP));
+        assert_eq!(policy.timeout, Some(crate::legacy::generation::PROBE_CAP));
         assert_eq!(policy.safety, ProcessInterruptionSafety::GracefulThenKill);
         assert_eq!(answer, None, "stdout without a token: no answer");
     }

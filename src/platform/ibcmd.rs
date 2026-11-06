@@ -278,12 +278,8 @@ impl<'a> IbcmdDsl<'a> {
         &self,
         extension: Option<&str>,
     ) -> Result<Option<String>, IbcmdError> {
-        if !crate::platform::generation::knows_generation_id(&self.binary) {
-            tracing::debug!(
-                binary = %self.binary.display(),
-                "the platform knows no generation command: the probe is not asked"
-            );
-            return Ok(None);
+        if let Some(answer) = crate::legacy::generation::probe_precheck(&self.binary) {
+            return Ok(answer);
         }
         let mut args = self.authenticated_infobase_args(&["config", "generation-id"]);
         if let Some(extension) = extension {
@@ -1722,7 +1718,7 @@ mod tests {
 mod generation_tests {
     use super::{IbcmdConnection, IbcmdDsl, IbcmdError};
     use crate::config::model::InfobaseConfig;
-    use crate::platform::generation::knows_generation_id;
+    use crate::legacy::generation::knows_generation_id;
     use crate::platform::process::{
         ProcessError, ProcessExecutionPolicy, ProcessRequest, ProcessResult, ProcessRunner,
         SpawnResult, WorkGiven,
