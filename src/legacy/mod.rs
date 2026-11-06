@@ -18,5 +18,5 @@
 //! | 6 | `use_cases/exchange_guard.rs::compare` | ветка «ответа нет» → `warn_unchecked` |
 //! | 7 | тесты минимума: `locator.rs`, `use_cases/result.rs`, `tests/cli_minimum_platform.rs` | фиксуры 8.3.23 → 8.3.11, 8.3.24 → 8.3.12 |
 
-// pub mod floor; // Task 3
+pub mod floor;
 pub mod generation;
