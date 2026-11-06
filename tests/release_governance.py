@@ -42,7 +42,7 @@ class ReleaseGovernanceTest(unittest.TestCase):
         self.assertIn("workflow_dispatch:", workflow)
         self.assertIn("group: release-${{ inputs.tag }}", workflow)
         self.assertIn("environment: release", workflow)
-        self.assertIn("github.ref == 'refs/heads/master'", workflow)
+        self.assertIn("github.ref == 'refs/heads/legacy/8.3.12'", workflow)
         self.assertIn("name: Audit draft release", workflow)
         self.assertIn("needs: [publish, audit-native]", workflow)
         self.assertIn("gh release edit", workflow)
@@ -412,7 +412,7 @@ class ReleaseGovernanceTest(unittest.TestCase):
     def test_package_metadata_names_fork_and_license(self) -> None:
         cargo = (ROOT / "Cargo.toml").read_text(encoding="utf-8")
         self.assertIn('license = "AGPL-3.0-only"', cargo)
-        self.assertIn('repository = "https://github.com/IngvarConsulting/v8-runner-rust"', cargo)
+        self.assertIn('repository = "https://github.com/Asmody/v8-legacy-runner"', cargo)
         self.assertTrue((ROOT / "FORK_NOTICE.md").is_file())
 
     def test_generated_schema_contract_no_longer_points_to_old_owner(self) -> None:

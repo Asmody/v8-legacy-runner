@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "Existing release tag on the current protected master commit"
+        description: "Existing release tag on the current protected legacy/8.3.12 commit"
         required: true
         type: string
       prerelease:
@@ -28,7 +28,7 @@ env:
 jobs:
   preflight:
     name: Verify release contract
-    if: ${{ github.ref == 'refs/heads/master' }}
+    if: ${{ github.ref == 'refs/heads/legacy/8.3.12' }}
     environment: release
     runs-on: ubuntu-latest
     permissions:
@@ -322,7 +322,7 @@ jobs:
           for asset in $(python3 scripts/release/release_assets.py attested-assets); do
             gh attestation verify "dist/${asset}" --repo "${GITHUB_REPOSITORY}" \
               --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release.yml" \
-              --source-ref refs/heads/master --source-digest "${GITHUB_SHA}" --deny-self-hosted-runners
+              --source-ref refs/heads/legacy/8.3.12 --source-digest "${GITHUB_SHA}" --deny-self-hosted-runners
           done
           gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json assets \
             --jq '.assets | map({name,size,digest}) | sort_by(.name)' > release-assets.snapshot.json
@@ -366,7 +366,7 @@ jobs:
           for asset in $(python3 scripts/release/release_assets.py attested-assets); do
             gh attestation verify "dist/${asset}" --repo "${GITHUB_REPOSITORY}" \
               --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release.yml" \
-              --source-ref refs/heads/master --source-digest "${GITHUB_SHA}" --deny-self-hosted-runners
+              --source-ref refs/heads/legacy/8.3.12 --source-digest "${GITHUB_SHA}" --deny-self-hosted-runners
           done
           gh release edit "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --verify-tag --draft=false
           test "$(gh release view "${RELEASE_TAG}" --repo "${GITHUB_REPOSITORY}" --json isImmutable --jq .isImmutable)" = true

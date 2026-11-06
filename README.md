@@ -5,11 +5,10 @@
 > CLI и конфигурация совпадают с апстримом; дельта описана в
 > [`FORK_NOTICE.md`](FORK_NOTICE.md) и [`src/legacy/mod.rs`](src/legacy/mod.rs).
 
-> **Maintained fork.** This repository is developed and released by This repository is developed and released by
-> [Ingvar Consulting](https://github.com/IngvarConsulting). It was forked from
-> [`alkoleft/v8-runner-rust`](https://github.com/alkoleft/v8-runner-rust) on
-> 2026-09-02. See [FORK_NOTICE.md](FORK_NOTICE.md) for provenance, modification,
-> source, and AGPL information.
+> **Provenance.** The upstream [`v8-runner`](https://github.com/IngvarConsulting/v8-runner-rust)
+> was itself forked from [`alkoleft/v8-runner-rust`](https://github.com/alkoleft/v8-runner-rust)
+> on 2026-09-02 and released by [Ingvar Consulting](https://github.com/IngvarConsulting).
+> See [FORK_NOTICE.md](FORK_NOTICE.md) for provenance, modification, source, and AGPL information.
 
 `v8-runner` — CLI (командная строка) и MCP server (сервер Model Context Protocol) для
 локального 1C development workflow (цикла разработки 1С). Он собирает исходники, готовит

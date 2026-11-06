@@ -61,13 +61,13 @@ def main() -> None:
         "license": package_value("license"),
         "repository": package_value("repository"),
     }
-    expected_tag = f"v{package['version']}"
+    expected_tag = f"legacy/v{package['version']}"
     if args.tag != expected_tag:
         fail(f"tag {args.tag!r} must equal Cargo package tag {expected_tag!r}")
     require_consolidated_manifest_version(package["version"] or "")
     if package.get("license") != "AGPL-3.0-only":
         fail("Cargo package must declare AGPL-3.0-only")
-    if package.get("repository") != "https://github.com/IngvarConsulting/v8-runner-rust":
+    if package.get("repository") != "https://github.com/Asmody/v8-legacy-runner":
         fail("Cargo package must name the maintained fork repository")
 
     for required in (
