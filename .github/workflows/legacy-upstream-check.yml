@@ -1,0 +1,54 @@
+name: legacy-upstream-check
+
+on:
+  schedule:
+    - cron: "0 4 * * 1" # еженедельно, понедельник 04:00 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch upstream
+        run: |
+          git remote add upstream https://github.com/IngvarConsulting/v8-runner-rust.git
+          git fetch upstream master
+      - name: Fast-forward mirror check
+        run: |
+          if ! git merge-base --is-ancestor master upstream/master; then
+            echo "master diverged from upstream/master" | tee probe.txt
+          fi
+      - name: Trial merge of the delta
+        run: |
+          if git merge-tree --write-tree master legacy/8.3.12 > tree.txt 2>&1; then
+            echo "clean"
+          else
+            echo "the delta conflicts with the upstream" | tee -a probe.txt
+            cat tree.txt >> probe.txt
+          fi
+      - name: New upstream movement
+        run: |
+          count=$(git rev-list --count master..upstream/master)
+          echo "new upstream commits: $count" >> probe.txt
+      - name: Open an issue on conflict or movement
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const probe = fs.readFileSync('probe.txt', 'utf8');
+            const needs = probe.includes('diverged') || probe.includes('conflicts');
+            const movement = /new upstream commits: (\d+)/.exec(probe);
+            if (!needs && (!movement || movement[1] === '0')) return;
+            const title = needs ? 'Дельта конфликтует с апстримом' : 'Апстрим двинулся: обновите legacy/8.3.12';
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: '```\n' + probe + '\n```\nПроцедура: `AGENTS.md`, раздел "Legacy delta over the upstream".'
+            });

@@ -161,3 +161,35 @@ feat(scope): short description
 
 - bullet points of what was done
 ```
+
+## Legacy delta over the upstream
+
+This repository is the fork `v8-legacy-runner` of
+[`IngvarConsulting/v8-runner-rust`](https://github.com/IngvarConsulting/v8-runner-rust)
+keeping platforms 8.3.12–8.3.23 alive. The rules:
+
+- `master` mirrors the upstream, fast-forward only, never commit to it;
+- all work, specs and releases happen on `legacy/8.3.12`;
+- delta knowledge lives in `src/legacy/` — the table of seams in
+  [`src/legacy/mod.rs`](src/legacy/mod.rs) is the canonical list of what to re-apply
+  when updating from the upstream; upstream files carry only 1–8 line seams;
+- the design: `docs/superpowers/specs/2026-11-06-v8-legacy-runner-overlay-design.md`.
+
+Updating from the upstream (run it **before** changing code):
+
+1. `git fetch upstream`
+2. `git checkout master && git merge --ff-only upstream/master && git push origin master`
+3. `git checkout legacy/8.3.12 && git rebase master`
+4. Conflicts are resolved in the seams only (see the table in `src/legacy/mod.rs`):
+   fix the seam, never inline logic into an upstream file. If the upstream changed the
+   very place a seam touches (took the cap, reworked the probe) — the upstream version
+   wins: resolve in its favor, re-seat or drop the seam.
+5. `cargo fmt && cargo clippy --all-targets && cargo test`
+6. `Cargo.toml`: `version = <upstream version>-legacy.<N+1>` (the `N` resets to 1 on
+   each upstream update)
+7. `cargo build --release`, tag `legacy/v<version>`, deploy the binary, update the
+   consuming project's runbook if the binary name or CLI changed
+8. `git push --force-with-lease origin legacy/8.3.12`
+
+A weekly CI probe (`legacy-upstream-check`) opens an issue when the upstream moved or
+the delta conflicts; it never pushes or rebases anything itself.
