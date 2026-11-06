@@ -17,6 +17,26 @@
 //! | 5 | `platform/locator.rs::MINIMUM_PLATFORM` | 8.3.24 → 8.3.12, комментарий ведёт в `legacy::floor` |
 //! | 6 | `use_cases/exchange_guard.rs::compare` | ветка «ответа нет» → `warn_unchecked` |
 //! | 7 | тесты минимума: `locator.rs`, `use_cases/result.rs`, `tests/cli_minimum_platform.rs` | фиксуры 8.3.23 → 8.3.11, 8.3.24 → 8.3.12 |
+//! | 8 | `support/fs.rs::TOOL_NAME` / `is_known_tool_name` | имя `v8-legacy-runner`; признание своих lock'ов — `legacy::is_known_tool_name` |
+//! | 9 | `cli/args.rs` `#[command(name)]` | `v8-legacy-runner` |
 
 pub mod floor;
 pub mod generation;
+
+/// Имена инструментов, чьи lock-файлы раннер считает своими. Прежнее имя `v8-runner`
+/// принимается: заброшенный lock прежнего бинарника форка — «свой», его разбирает
+/// обычная логика живого владельца, а не ветка чужого формата.
+pub fn is_known_tool_name(tool: &str) -> bool {
+    tool == "v8-legacy-runner" || tool == "v8-runner"
+}
+
+#[cfg(test)]
+mod tests {
+    /// Lock прежнего бинарника форка остаётся своим после переименования.
+    #[test]
+    fn a_lock_of_the_previous_fork_binary_is_still_ours() {
+        assert!(super::is_known_tool_name("v8-legacy-runner"));
+        assert!(super::is_known_tool_name("v8-runner"));
+        assert!(!super::is_known_tool_name("someone-else"));
+    }
+}

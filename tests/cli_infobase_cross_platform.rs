@@ -51,7 +51,7 @@ fn write_config(root: &Path, platform: &Path) -> PathBuf {
 }
 
 fn run_json(config: &Path, arguments: &[&str]) -> Value {
-    let output = Command::new(env!("CARGO_BIN_EXE_v8-runner"))
+    let output = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"))
         .arg("--config")
         .arg(config)
         .arg("--json-message")
@@ -102,7 +102,7 @@ fn a_download_answers_with_an_ordinary_path() {
     with_main_set(&config);
     let expected = ordinary_canonical(root.path()).join(r"out\main.cf");
 
-    let json = Command::new(env!("CARGO_BIN_EXE_v8-runner"))
+    let json = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"))
         .arg("--config")
         .arg(&config)
         .args([
@@ -130,7 +130,7 @@ fn a_download_answers_with_an_ordinary_path() {
         "the envelope keeps its key order: {stdout}"
     );
 
-    let text = Command::new(env!("CARGO_BIN_EXE_v8-runner"))
+    let text = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"))
         .arg("--config")
         .arg(&config)
         .args(["--no-color", "download", "main", "--output", "out/main.cf"])
@@ -181,7 +181,7 @@ fn an_owner_warning_names_the_copies_with_ordinary_paths() {
     let written = serde_json::to_string_pretty(&marker).expect("marker");
     fs::write(&marker_path, &written).expect("marker");
 
-    let output = Command::new(env!("CARGO_BIN_EXE_v8-runner"))
+    let output = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"))
         .arg("--config")
         .arg(&config)
         .args(["--json-message", "push", "--dry-run"])
@@ -335,7 +335,7 @@ fn concurrent_native_cli_processes_observe_the_workspace_lock() {
     let first_dt = root.path().join("project/dist/first.dt");
     let second_dt = root.path().join("project/dist/second.dt");
 
-    let first = Command::new(env!("CARGO_BIN_EXE_v8-runner"))
+    let first = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"))
         .arg("--config")
         .arg(&config)
         .arg("--json-message")
@@ -350,7 +350,7 @@ fn concurrent_native_cli_processes_observe_the_workspace_lock() {
     let first = BlockedProcess::new(first, release.clone());
     wait_for_file(&ready);
 
-    let second = Command::new(env!("CARGO_BIN_EXE_v8-runner"))
+    let second = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"))
         .arg("--config")
         .arg(&config)
         .arg("--json-message")

@@ -1,14 +1,16 @@
-# Ingvar Consulting fork notice
+# v8-legacy-runner fork notice
 
-This repository is the Ingvar Consulting maintained fork of
-[`alkoleft/v8-runner-rust`](https://github.com/alkoleft/v8-runner-rust).
+This repository, `v8-legacy-runner`, is the maintained fork of
+[`IngvarConsulting/v8-runner-rust`](https://github.com/IngvarConsulting/v8-runner-rust)
+that keeps 1C:Enterprise 8.3.12–8.3.23 working.
 
-- Fork established: 2026-09-02.
-- Upstream baseline: `7ce1b062843d86644fe55741dbe0ee79f7ca767d`.
-- Maintained source: <https://github.com/IngvarConsulting/v8-runner-rust>.
+- Fork established: 2026-11-06.
+- Upstream baseline: `9b6c5d8` (upstream `master`, minimum platform 8.3.24).
+- Maintained source: <https://github.com/Asmody/v8-legacy-runner>.
 - License: GNU Affero General Public License v3.0 only (`AGPL-3.0-only`).
 
-Changes made by Ingvar Consulting are identified by the Git history after the
-baseline commit. Each binary release links to its exact tag and corresponding
-source, including the build and packaging workflow. Copyright and authorship of
-the upstream work remain with their original holders.
+The fork carries a delta over the upstream, laid out as knowledge in `src/legacy/`
+plus thin seams in upstream files (the table of seams lives in `src/legacy/mod.rs`).
+`master` mirrors the upstream and is only fast-forwarded; all work happens on
+`legacy/8.3.12`. The update procedure from the upstream is described in `AGENTS.md`,
+section "Legacy delta over the upstream".

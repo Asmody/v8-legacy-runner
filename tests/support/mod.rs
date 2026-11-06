@@ -68,11 +68,11 @@ pub fn commit_sources(dir: &Path) {
 }
 
 pub fn v8_runner_command() -> Command {
-    Command::cargo_bin("v8-runner").expect("binary")
+    Command::cargo_bin("v8-legacy-runner").expect("binary")
 }
 
 pub fn v8_runner_binary() -> PathBuf {
-    assert_cmd::cargo::cargo_bin("v8-runner")
+    assert_cmd::cargo::cargo_bin("v8-legacy-runner")
 }
 
 /// Поддельные утилиты платформы пишутся как shell-скрипты, поэтому живут только под

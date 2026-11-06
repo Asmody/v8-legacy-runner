@@ -160,7 +160,7 @@ impl Project {
     }
 
     fn command(&self) -> Command {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_v8-runner"));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"));
         command
             .arg("--config")
             .arg(&self.config)

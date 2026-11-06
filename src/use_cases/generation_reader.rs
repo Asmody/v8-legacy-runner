@@ -18,7 +18,6 @@
 //! сохраняет основную конфигурацию и конфигурацию базы данных в файлы.
 
 use std::path::{Path, PathBuf};
-use std::time::Duration;
 
 use crate::config::model::AppConfig;
 use crate::domain::capability::Provider;
