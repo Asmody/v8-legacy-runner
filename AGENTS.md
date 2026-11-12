@@ -174,7 +174,11 @@ keeping platforms 8.3.12–8.3.23 alive. The rules:
 - delta knowledge lives in `src/legacy/` — the table of seams in
   [`src/legacy/mod.rs`](src/legacy/mod.rs) is the canonical list of what to re-apply
   when updating from the upstream; upstream files carry only 1–8 line seams;
-- the design: `docs/superpowers/specs/2026-11-06-v8-legacy-runner-overlay-design.md`.
+- the design: `docs/superpowers/specs/2026-11-06-v8-legacy-runner-overlay-design.md`;
+- CI does not run automatically (owner's decision, 2026-11-12): the workflow stays for
+  manual `workflow_dispatch` runs only; the check that stands in for it is the local
+  contract scope `V8_RUNNER_CI_SCOPE=contract bash scripts/test/ci-rust.sh` and live runs
+  on the project's platform.
 
 Updating from the upstream (run it **before** changing code):
 

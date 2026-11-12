@@ -1,12 +1,10 @@
 name: CI
 
+# Решение владельца форка (12.11.2026): автоматический CI отключён — приёмкой считаются
+# живые прогоны на платформе проекта и локальный контрактный прогон
+# (`scripts/test/ci-rust.sh`), поэтому workflow остаётся только для ручного запуска.
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - master
-      - legacy/8.3.12
-  pull_request:
 
 permissions:
   contents: read
