@@ -73,7 +73,7 @@ impl Stand {
     }
 
     fn run(&self, extra: &[&str], fail: bool) -> Output {
-        let mut command = Command::new(env!("CARGO_BIN_EXE_v8-runner"));
+        let mut command = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"));
         command
             .arg("--config")
             .arg(&self.config)

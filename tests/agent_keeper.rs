@@ -233,7 +233,7 @@ impl Keeper {
         }
         let log_path = bench.root().join(format!("keeper-{key}.log"));
         let log = fs::File::create(&log_path).unwrap();
-        let mut child = Command::new(env!("CARGO_BIN_EXE_v8-runner"))
+        let mut child = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"))
             .args(["--log-level", "debug", "agent", "keeper", "--key", &key])
             .env("V8_RUNNER_STATE_DIR", &state)
             .env("V8_RUNNER_AGENT_IDLE_MS", idle_ms.to_string())
@@ -911,7 +911,7 @@ fn a_second_keeper_of_the_same_key_refuses_to_start() {
     let bench = Bench::new(false);
     let keeper = Keeper::start(&bench, 600_000);
     ready(&keeper);
-    let mut second = Command::new(env!("CARGO_BIN_EXE_v8-runner"))
+    let mut second = Command::new(env!("CARGO_BIN_EXE_v8-legacy-runner"))
         .args(["agent", "keeper", "--key", &keeper.key])
         .env("V8_RUNNER_STATE_DIR", &keeper.state)
         .stdin(Stdio::piped())

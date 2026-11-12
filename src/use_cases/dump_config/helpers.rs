@@ -10,7 +10,7 @@ use crate::domain::dump::{DumpMode, DumpResult, DumpSelectorResult};
 use crate::domain::partial_dump_selector::PartialDumpSelector;
 use crate::platform::designer::DesignerDsl;
 use crate::platform::ibcmd::{IbcmdConnection, IbcmdDsl, IbcmdError};
-use crate::platform::process::ProcessRunner;
+use crate::platform::process::{ProcessExecutionPolicy, ProcessRunner};
 use crate::platform::result::PlatformCommandResult;
 use crate::support::edt_project;
 use crate::support::error::AppError;
@@ -459,16 +459,24 @@ pub(crate) fn build_ibcmd_dsl<'a>(
     runner: &'a dyn ProcessRunner,
     safety: InterruptionSafetyClass,
 ) -> Result<IbcmdDsl<'a>, AppError> {
+    build_ibcmd_dsl_with_policy(config, binary, runner, context.process_policy(safety, None))
+}
+
+/// То же, но с готовой политикой: зовущий сам задаёт предел запуска. Так зонд поколения
+/// несёт свой предел (`crate::legacy::generation::PROBE_CAP`), а прочие чтения идут без него.
+pub(crate) fn build_ibcmd_dsl_with_policy<'a>(
+    config: &AppConfig,
+    binary: &Path,
+    runner: &'a dyn ProcessRunner,
+    execution_policy: ProcessExecutionPolicy,
+) -> Result<IbcmdDsl<'a>, AppError> {
     let connection = IbcmdConnection::from_infobase(&config.infobase).map_err(map_ibcmd_error)?;
     let data_path = ibcmd_data_path(config)?;
 
-    Ok(IbcmdDsl::new(
-        binary.to_path_buf(),
-        connection,
-        runner,
-        context.process_policy(safety, None),
+    Ok(
+        IbcmdDsl::new(binary.to_path_buf(), connection, runner, execution_policy)
+            .with_data_path(data_path),
     )
-    .with_data_path(data_path))
 }
 
 /// Каталог данных автономного сервера `ibcmd` в `workPath` проекта. Блокируется он, а не база,

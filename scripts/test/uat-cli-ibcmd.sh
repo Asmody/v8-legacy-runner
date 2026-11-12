@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 LIVE_SCRIPT="$ROOT_DIR/scripts/test/live-cli-ibcmd.sh"
 OUTPUT_ROOT="$ROOT_DIR/target/manual-tests/live-cli-ibcmd"
 GENERATED_CONFIG_PATH="$ROOT_DIR/target/manual-tests/live-cli-ibcmd.generated.yaml"
-BIN_PATH="${V8TR_BIN:-$ROOT_DIR/target/debug/v8-runner}"
+BIN_PATH="${V8TR_BIN:-$ROOT_DIR/target/debug/v8-legacy-runner}"
 
 stage() {
     echo
@@ -14,7 +14,7 @@ stage() {
 }
 
 stage "build cargo binary"
-(cd "$ROOT_DIR" && cargo build --locked --bin v8-runner)
+(cd "$ROOT_DIR" && cargo build --locked --bin v8-legacy-runner)
 
 stage "clean previous live IBCMD artifacts"
 rm -rf "$OUTPUT_ROOT" "$GENERATED_CONFIG_PATH"

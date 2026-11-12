@@ -17,9 +17,9 @@ case "$CI_SCOPE" in
         # `cargo clippy --locked --bins`, а тестовые цели собирает сам `cargo test` ниже.
         cargo test --locked --test cli_infobase_cross_platform
         cargo test --locked --test cli_external_full_pull
-        cargo test --locked --bin v8-runner 'support::fs::tests::'
-        cargo test --locked --bin v8-runner 'config::loader::tests::declared_infobases_'
-        cargo test --locked --bin v8-runner 'use_cases::infobase_owner::tests::'
+        cargo test --locked --bin v8-legacy-runner 'support::fs::tests::'
+        cargo test --locked --bin v8-legacy-runner 'config::loader::tests::declared_infobases_'
+        cargo test --locked --bin v8-legacy-runner 'use_cases::infobase_owner::tests::'
         windows_contract_tests=(
           "a_closed_job_keeps_the_agent_one_shot"
           "platform::designer::tests::cf_exports_pass_windows_drive_paths_without_verbatim_prefix"

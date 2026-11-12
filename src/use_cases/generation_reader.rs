@@ -85,15 +85,13 @@ pub(crate) fn read_generation<'a>(
         )
         .config_generation_id(extension)
         .map_err(AppError::from),
-        GenerationProcess::Ibcmd { binary, runner } => build_ibcmd_dsl(
-            context,
-            config,
-            binary,
-            runner,
-            InterruptionSafetyClass::GracefulThenKill,
-        )?
-        .config_generation_id(extension)
-        .map_err(AppError::from),
+        GenerationProcess::Ibcmd { binary, runner } => {
+            crate::use_cases::dump_config::helpers::build_ibcmd_dsl_with_policy(
+                config, binary, runner, policy,
+            )?
+            .config_generation_id(extension)
+            .map_err(AppError::from)
+        }
     }
 }
 
@@ -595,7 +593,6 @@ mod tests {
                 Ok(GenerationProcess::Ibcmd {
                     binary: &binary,
                     runner: &runner,
-                    data_path: None,
                 })
             },
             None,

@@ -10,7 +10,7 @@ DESIGNER_SMOKE_PROFILE="${V8TR_DESIGNER_SMOKE_PROFILE:-mandatory}"
 DESIGNER_TEST_MODE="${V8TR_DESIGNER_TEST_MODE:-none}"
 DESIGNER_TEST_MODULE="${V8TR_DESIGNER_TEST_MODULE:-}"
 DESIGNER_LAUNCH_SMOKE="${V8TR_DESIGNER_LAUNCH_SMOKE:-0}"
-BIN_PATH="${V8TR_BIN:-$ROOT_DIR/target/debug/v8-runner}"
+BIN_PATH="${V8TR_BIN:-$ROOT_DIR/target/debug/v8-legacy-runner}"
 OUTPUT_ROOT="${V8TR_LIVE_CLI_OUTPUT_ROOT:-$ROOT_DIR/target/manual-tests/live-cli-designer}"
 FIXTURE_BASE_PATH="$ROOT_DIR/tests/fixtures/designer"
 VANESSA_EPF_PATH="${V8TR_VA_EPF:-$ROOT_DIR/tests/fixtures/vanessa-automation-single.epf}"
@@ -603,7 +603,7 @@ fi
 
 if [[ ! -x "$BIN_PATH" ]]; then
     echo "Building v8-runner binary..." >&2
-    (cd "$ROOT_DIR" && cargo build --locked --bin v8-runner >/dev/null)
+    (cd "$ROOT_DIR" && cargo build --locked --bin v8-legacy-runner >/dev/null)
 fi
 
 rm -rf "$OUTPUT_ROOT"
