@@ -110,6 +110,7 @@ pub(super) fn plan_configurator_load_step(
     source_context: &SourceSetContext,
     full_rebuild: bool,
     analysis_by_name: Option<&AnalysisByName>,
+    extension_partial: bool,
 ) -> Result<StepPlan, analyzer::ChangeDetectionError> {
     if full_rebuild {
         return Ok(StepPlan::Execute {
@@ -130,6 +131,7 @@ pub(super) fn plan_configurator_load_step(
         source_set,
         source_context.path(),
         outcome,
+        extension_partial,
     ))
 }
 
@@ -236,6 +238,7 @@ fn plan_configurator_load_from_analysis(
     source_set: &SourceSetConfig,
     context_path: &Path,
     outcome: AnalysisOutcome,
+    extension_partial: bool,
 ) -> StepPlan {
     match outcome {
         AnalysisOutcome::NoChanges => {
@@ -278,6 +281,7 @@ fn plan_configurator_load_from_analysis(
                 changes,
                 prepared,
                 LoadPlanSource::Configurator,
+                extension_partial,
             )
         }
     }
@@ -323,12 +327,15 @@ fn plan_generated_designer_load_from_analysis(
         }
         AnalysisOutcome::Changes { changes, prepared } => {
             log_change_analysis(source_set.name.as_str(), &changes);
+            // EDT-плечо грузит расширения целиком всегда: пол его не меняет, признак
+            // передаётся нейтральный.
             plan_partial_or_full_load(
                 source_set,
                 context_path,
                 changes,
                 prepared,
                 LoadPlanSource::GeneratedDesigner,
+                true,
             )
         }
     }
@@ -366,10 +373,16 @@ fn plan_partial_or_full_load(
     changes: Vec<analyzer::FileChange>,
     prepared: PreparedStateUpdate,
     source: LoadPlanSource,
+    extension_partial: bool,
 ) -> StepPlan {
     let edt_extension =
         source.forces_full_for_extension() && source_set.purpose == SourceSetPurpose::Extension;
-    let decision = if edt_extension || nothing_to_compare(&changes, &prepared) {
+    // Расширение на платформе ниже пола частичной загрузки расширений грузится целиком
+    // (`INV.PLATFORM.AN-EXTENSION-LOADS-WHOLE-BELOW-THE-PARTIAL-LOAD-FLOOR`); признак решает
+    // `crate::legacy::floor`, здесь — только передача.
+    let floored_extension = !extension_partial && source_set.purpose == SourceSetPurpose::Extension;
+    let decision = if edt_extension || floored_extension || nothing_to_compare(&changes, &prepared)
+    {
         LoadDecision::Full
     } else {
         partial_load::decide(&changes, context_path)
@@ -402,6 +415,8 @@ fn plan_partial_or_full_load(
                 mode: BuildMode::Full,
                 message: if edt_extension {
                     "full load required for EDT extension source-set"
+                } else if floored_extension {
+                    crate::legacy::floor::EXTENSION_FULL_LOAD_REASON
                 } else {
                     "full load selected by partial-load rules"
                 }

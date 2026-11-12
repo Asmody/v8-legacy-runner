@@ -349,13 +349,24 @@ impl BuildSession {
                 match analyze(env.context, &env.config.work_path, &sources)? {
                     AnalysisOutcome::NoChanges => Load::Skip,
                     AnalysisOutcome::Changes { changes, prepared } => {
-                        match partial_load::decide_build(
-                            &changes,
-                            sources.path(),
-                            RunnerDirs::of(env.config),
-                        ) {
-                            LoadDecision::Partial(paths) => Load::Partial(paths, prepared),
-                            LoadDecision::Full => Load::Full,
+                        // Расширение на платформе ниже пола частичной загрузки расширений
+                        // грузится целиком: сборка пакета строится той же платформой, что
+                        // и `push` (`INV.PLATFORM.AN-EXTENSION-LOADS-WHOLE-BELOW-THE-PARTIAL-LOAD-FLOOR`).
+                        if extension.is_some()
+                            && !crate::legacy::floor::extensions_load_partially(
+                                &mut PlatformUtilities::from_config(env.config),
+                            )
+                        {
+                            Load::Full
+                        } else {
+                            match partial_load::decide_build(
+                                &changes,
+                                sources.path(),
+                                RunnerDirs::of(env.config),
+                            ) {
+                                LoadDecision::Partial(paths) => Load::Partial(paths, prepared),
+                                LoadDecision::Full => Load::Full,
+                            }
                         }
                     }
                     AnalysisOutcome::Fallback => Load::Full,

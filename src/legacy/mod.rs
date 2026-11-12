@@ -20,6 +20,10 @@
 //! | 7 | тесты минимума: `locator.rs`, `use_cases/result.rs`, `tests/cli_minimum_platform.rs` | фиксуры 8.3.23 → 8.3.11, 8.3.24 → 8.3.12 |
 //! | 8 | `support/fs.rs::TOOL_NAME` / `is_known_tool_name` | имя `v8-legacy-runner`; признание своих lock'ов — `legacy::is_known_tool_name` |
 //! | 9 | `cli/args.rs` `#[command(name)]` | `v8-legacy-runner` |
+//! | 10 | `use_cases/build_project.rs::run_build_branch`, `::push_size` | резолв `legacy::floor::extensions_load_partially` до `push_size`; расширение ниже пола даёт `OperationSize::Whole` |
+//! | 11 | `use_cases/build_project/helpers.rs::plan_partial_or_full_load` (+ флаг через `plan_configurator_load_step` в двух местах `coordinator.rs`) | расширение ниже пола → `Full` с причиной `EXTENSION_FULL_LOAD_REASON` |
+//! | 12 | `use_cases/build_infobase.rs` (prepare, слот расширения) | `make`/`convert`: расширение ниже пола → `Load::Full` |
+//! | 13 | имя бинарника в CI/тестах: `scripts/test/ci-rust.sh`, `scripts/test/live-cli-fixture.sh`, `scripts/test/uat-cli-ibcmd.sh`, `CARGO_BIN_EXE_*` в `tests/` | `v8-legacy-runner` |
 
 pub mod floor;
 pub mod generation;

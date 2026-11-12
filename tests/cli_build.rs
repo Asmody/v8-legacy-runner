@@ -1531,6 +1531,117 @@ fn a_planned_build_refuses_when_only_the_extension_still_needs_a_missing_platfor
     assert!(reported.contains("1cv8"), "{reported}");
 }
 
+/// Расширение на платформе ниже пола частичной загрузки расширений грузится целиком:
+/// в журнале платформы нет `-partial`, шаг называет причину пола
+/// (`INV.PLATFORM.AN-EXTENSION-LOADS-WHOLE-BELOW-THE-PARTIAL-LOAD-FLOOR`).
+#[test]
+fn build_json_extension_below_the_partial_load_floor_uses_full_load() {
+    let dir = temp_workspace();
+    let base_path = dir.path().join("project");
+    let work_path = dir.path().join("work");
+    let config_path = dir.path().join("v8project.yaml");
+    let binary_path = dir.path().join("8.3.12.1685").join("bin").join("1cv8");
+
+    fs::create_dir_all(base_path.join("main").join("Catalogs.Items")).expect("main");
+    fs::create_dir_all(base_path.join("ext").join("CommonModules")).expect("ext");
+    fs::create_dir_all(&work_path).expect("work");
+    fs::write(
+        base_path
+            .join("main")
+            .join("Catalogs.Items")
+            .join("ObjectModule.bsl"),
+        "procedure Test() endprocedure",
+    )
+    .expect("main bsl");
+    fs::write(
+        base_path
+            .join("ext")
+            .join("CommonModules")
+            .join("Module.bsl"),
+        "procedure Test() endprocedure",
+    )
+    .expect("ext bsl");
+
+    write_build_script(&binary_path, None);
+    write_config(&config_path, &base_path, &work_path, &binary_path);
+    remember(
+        dir.path(),
+        &[
+            support::memory::Set::configuration("main", &base_path.join("main")),
+            support::memory::Set::extension("ext", &base_path.join("ext")),
+        ],
+    );
+
+    // Полная отправка создаёт снимок, с которым сравнивается правка модуля.
+    let primed = v8_runner_command()
+        .args([
+            "--config",
+            &config_path.display().to_string(),
+            "build",
+            "--full",
+        ])
+        .output()
+        .expect("prime build");
+    assert!(
+        primed.status.success(),
+        "stdout={} stderr={}",
+        String::from_utf8_lossy(&primed.stdout),
+        String::from_utf8_lossy(&primed.stderr)
+    );
+
+    fs::write(
+        base_path
+            .join("ext")
+            .join("CommonModules")
+            .join("Module.bsl"),
+        "procedure Test() // changed after snapshot\nendprocedure",
+    )
+    .expect("modify extension");
+
+    let output = v8_runner_command()
+        .args([
+            "--config",
+            &config_path.display().to_string(),
+            "--json-message",
+            "build",
+        ])
+        .output()
+        .expect("run command");
+
+    assert!(output.status.success());
+    let payload: Value = serde_json::from_slice(&output.stdout).expect("json");
+    assert_eq!(payload["ok"], true);
+
+    let steps = payload["data"]["steps"].as_array().expect("steps");
+    let ext = steps
+        .iter()
+        .find(|step| step["source_set"] == "ext")
+        .expect("extension step");
+    assert_eq!(ext["mode"], "full");
+    assert!(
+        ext["message"]
+            .as_str()
+            .expect("step message")
+            .contains("below the partial-load floor"),
+        "{ext}"
+    );
+
+    let logs_dir = work_path.join("logs").join("platform");
+    let log_name = fs::read_dir(&logs_dir)
+        .expect("platform logs")
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .find(|name| name.ends_with("-ext-load.log"))
+        .expect("extension load log");
+    let contents = fs::read_to_string(logs_dir.join(log_name)).expect("platform log");
+    assert!(contents.contains("/LoadConfigFromFiles"));
+    assert!(contents.contains("-Extension ext"));
+    assert!(
+        !contents.contains("-partial"),
+        "the extension below the floor must not be loaded partially: {contents}"
+    );
+}
+
 #[test]
 fn build_json_edt_extension_uses_full_load_and_writes_platform_log() {
     let (_dir, config_path, work_path) = setup_edt_extension_project();

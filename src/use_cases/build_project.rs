@@ -8,7 +8,7 @@ use std::time::Instant;
 use crate::change_detection::analyzer;
 use crate::change_detection::analyzer::AnalysisOutcome;
 use crate::change_detection::partial_load;
-use crate::config::model::{AppConfig, SourceFormat, SourceSetConfig};
+use crate::config::model::{AppConfig, SourceFormat, SourceSetConfig, SourceSetPurpose};
 use crate::domain::build::{BuildMode, BuildResult};
 use crate::domain::capability::{Operation, OperationSize, Provider};
 use crate::domain::progress::ProgressPhase;
@@ -146,12 +146,18 @@ fn run_build_branch(
         },
         Err(_) => None,
     };
-    let size = push_size(config, args, analysis.as_ref());
+    // Пол частичной загрузки расширений решается один раз на команду: версия платформы
+    // ищется ленивым locate, кэш остаётся и для выбора исполнителя. Полной отправке и
+    // EDT-проекту признак не нужен: там расширения и так грузятся целиком.
+    let mut utilities = PlatformUtilities::from_config(config);
+    let extension_partial = !args.load.is_whole()
+        && config.format != SourceFormat::Edt
+        && crate::legacy::floor::extensions_load_partially(&mut utilities);
+    let size = push_size(config, args, analysis.as_ref(), extension_partial);
     // Сборка без изменений не запускает платформу, и раньше не требовала её: исполнитель
     // ищется лениво, по первому набору, которому есть что грузить. Поэтому отказ выбора
     // здесь не прерывает команду — он остаётся в квитанции, а нужна ли платформа,
     // решают шаги.
-    let mut utilities = PlatformUtilities::from_config(config);
     let (provider, receipt) = match crate::use_cases::provider_selection::select_sized(
         config,
         &mut utilities,
@@ -175,7 +181,15 @@ fn run_build_branch(
         }
     }
     let outcome = match memory {
-        Ok(()) => run_build_selected(context, config, args, provider, analysis, &mut early),
+        Ok(()) => run_build_selected(
+            context,
+            config,
+            args,
+            provider,
+            analysis,
+            extension_partial,
+            &mut early,
+        ),
         Err(error) => Err(BuildExecutionFailure::with_payload(
             error,
             BuildResult {
@@ -264,6 +278,7 @@ fn push_size(
     config: &AppConfig,
     args: &BuildArgs,
     analysis: Option<&AnalysisByName>,
+    extension_partial: bool,
 ) -> OperationSize {
     if args.load.is_whole() {
         return OperationSize::Whole;
@@ -284,6 +299,15 @@ fn push_size(
         match analysis.get(&source_set.name) {
             Some(Ok(AnalysisOutcome::NoChanges)) => {}
             Some(Ok(outcome)) if loads_whole(outcome) => loads = true,
+            // Расширение на платформе ниже пола частичной загрузки расширений грузится
+            // целиком: объём отправки Whole, чтобы и план шага, и порядок цепочки
+            // исполнителей считали загрузку полной (`INV.PLATFORM
+            // .AN-EXTENSION-LOADS-WHOLE-BELOW-THE-PARTIAL-LOAD-FLOOR`).
+            Some(Ok(_))
+                if !extension_partial && source_set.purpose == SourceSetPurpose::Extension =>
+            {
+                loads = true
+            }
             Some(Ok(_) | Err(_)) | None => return OperationSize::ByChanges,
         }
     }
@@ -358,6 +382,7 @@ fn run_build_selected(
     args: &BuildArgs,
     provider: Provider,
     analysis: Option<AnalysisByName>,
+    extension_partial: bool,
     early: &mut Option<EarlyAgent>,
 ) -> UseCaseResult<BuildResult> {
     if config.format == SourceFormat::Edt {
@@ -380,9 +405,18 @@ fn run_build_selected(
     }
 
     match provider {
-        Provider::Designer => run_build_designer(context, config, args, analysis),
-        Provider::Ibcmd => run_build_ibcmd(context, config, args, analysis),
-        Provider::Agent => run_build_agent(context, config, args, analysis, early.take()),
+        Provider::Designer => {
+            run_build_designer(context, config, args, analysis, extension_partial)
+        }
+        Provider::Ibcmd => run_build_ibcmd(context, config, args, analysis, extension_partial),
+        Provider::Agent => run_build_agent(
+            context,
+            config,
+            args,
+            analysis,
+            extension_partial,
+            early.take(),
+        ),
         other => Err(BuildExecutionFailure::with_payload(
             crate::use_cases::unimplemented_provider(Operation::Build, other),
             BuildResult {
@@ -403,9 +437,11 @@ fn run_build_designer(
     config: &AppConfig,
     args: &BuildArgs,
     analysis: Option<AnalysisByName>,
+    extension_partial: bool,
 ) -> Result<BuildResult, BuildExecutionFailure> {
     let started = Instant::now();
-    let mut result = coordinator::run_build_designer(context, config, args, analysis)?;
+    let mut result =
+        coordinator::run_build_designer(context, config, args, analysis, extension_partial)?;
     append_client_mcp_extension_step(
         context,
         config,
@@ -422,9 +458,11 @@ fn run_build_ibcmd(
     config: &AppConfig,
     args: &BuildArgs,
     analysis: Option<AnalysisByName>,
+    extension_partial: bool,
 ) -> Result<BuildResult, BuildExecutionFailure> {
     let started = Instant::now();
-    let mut result = coordinator::run_build_ibcmd(context, config, args, analysis)?;
+    let mut result =
+        coordinator::run_build_ibcmd(context, config, args, analysis, extension_partial)?;
     append_client_mcp_extension_step(context, config, args, Provider::Ibcmd, started, &mut result)?;
     Ok(result)
 }
@@ -434,10 +472,12 @@ fn run_build_agent(
     config: &AppConfig,
     args: &BuildArgs,
     analysis: Option<AnalysisByName>,
+    extension_partial: bool,
     early: Option<EarlyAgent>,
 ) -> Result<BuildResult, BuildExecutionFailure> {
     let started = Instant::now();
-    let mut result = coordinator::run_build_agent(context, config, args, analysis, early)?;
+    let mut result =
+        coordinator::run_build_agent(context, config, args, analysis, extension_partial, early)?;
     append_client_mcp_extension_step(context, config, args, Provider::Agent, started, &mut result)?;
     Ok(result)
 }

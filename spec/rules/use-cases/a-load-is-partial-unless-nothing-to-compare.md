@@ -38,4 +38,6 @@ check:
 (`INV.USE-CASES.A-COPIED-BASE-STARTS-WITH-A-FULL-PUSH`), для расширений формата EDT,
 при небезопасном пути
 (`INV.USE-CASES.A-CHANGE-OUTSIDE-THE-SOURCE-ROOT-TURNS-THE-LOAD-FULL`),
-неподтверждённом удалении и восстановимом сбое анализа.
+неподтверждённом удалении и восстановимом сбое анализа, а также для набора-расширения
+на платформе ниже пола частичной загрузки расширений
+(`INV.PLATFORM.AN-EXTENSION-LOADS-WHOLE-BELOW-THE-PARTIAL-LOAD-FLOOR`).

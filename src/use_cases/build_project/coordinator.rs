@@ -197,12 +197,14 @@ pub(super) fn run_build_designer(
     config: &AppConfig,
     args: &BuildArgs,
     analysis: Option<AnalysisByName>,
+    extension_partial: bool,
 ) -> Result<BuildResult, BuildExecutionFailure> {
     run_build_with(
         context,
         config,
         args,
         analysis,
+        extension_partial,
         &mut DesignerLoader::new(config),
     )
 }
@@ -212,10 +214,18 @@ pub(super) fn run_build_agent(
     config: &AppConfig,
     args: &BuildArgs,
     analysis: Option<AnalysisByName>,
+    extension_partial: bool,
     early: Option<crate::use_cases::agent_session::EarlyAgent>,
 ) -> Result<BuildResult, BuildExecutionFailure> {
     let mut loader = super::agent::AgentLoader::new(config, early);
-    let outcome = run_build_with(context, config, args, analysis, &mut loader);
+    let outcome = run_build_with(
+        context,
+        config,
+        args,
+        analysis,
+        extension_partial,
+        &mut loader,
+    );
     loader.finish(context);
     outcome
 }
@@ -245,6 +255,7 @@ fn run_build_with(
     config: &AppConfig,
     args: &BuildArgs,
     analysis: Option<AnalysisByName>,
+    extension_partial: bool,
     loader: &mut dyn SourceSetLoader,
 ) -> Result<BuildResult, BuildExecutionFailure> {
     debug!(
@@ -326,6 +337,7 @@ fn run_build_with(
             &source_context,
             args.load.is_whole(),
             analysis_by_name.as_ref(),
+            extension_partial,
         ) {
             Ok(plan) => plan,
             Err(error) => {
@@ -565,6 +577,7 @@ pub(super) fn run_build_ibcmd(
     config: &AppConfig,
     args: &BuildArgs,
     analysis: Option<AnalysisByName>,
+    extension_partial: bool,
 ) -> Result<BuildResult, BuildExecutionFailure> {
     debug!(
         load = ?args.load,
@@ -658,6 +671,7 @@ pub(super) fn run_build_ibcmd(
             &source_context,
             args.load.is_whole(),
             analysis_by_name.as_ref(),
+            extension_partial,
         ) {
             Ok(plan) => plan,
             Err(error) => {
