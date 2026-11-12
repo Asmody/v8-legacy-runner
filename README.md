@@ -49,10 +49,10 @@ AI-агент получают одну воспроизводимую точк�
 проверка отдельного архива по манифесту и аттестациям, offline-проверка и история имён файлов —
 [docs/RELEASES.md](https://github.com/IngvarConsulting/v8-runner-rust/blob/master/docs/RELEASES.md).
 
-Сборка из исходников — `cargo build --release`, бинарник ляжет в `target/release/v8-runner`.
+Сборка из исходников — `cargo build --release`, бинарник ляжет в `target/release/v8-legacy-runner`.
 
-Раннер поддерживает платформу 1С 8.3.24 и новее
-([минимальная версия](docs/CAPABILITIES.md#минимальная-версия-платформы)). `v8-runner platforms`
+Раннер поддерживает платформу 1С 8.3.12 и новее (пол форка; апстрим держит 8.3.24
+— [минимальная версия](docs/CAPABILITIES.md#минимальная-версия-платформы)). `v8-runner platforms`
 показывает найденные установки и какую из них возьмёт каждая утилита: без
 `tools.platform.version` — выпуск, который пишет формат исходников проекта
 ([выбор платформы](docs/CONFIGURATION.md#toolsplatformversion)).

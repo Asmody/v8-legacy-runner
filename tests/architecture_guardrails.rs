@@ -534,8 +534,8 @@ fn an_ibcmd_connection_is_built_only_where_ibcmd_runs() {
             "создание базы автономного сервера в СУБД: другого исполнителя у него нет, каталог данных его службы",
         ),
         (
-            "crate::use_cases::dump_config::helpers::build_ibcmd_dsl",
-            "единственный построитель `ibcmd` к базе проекта: его зовёт шаг, выбравший `ibcmd`",
+            "crate::use_cases::dump_config::helpers::build_ibcmd_dsl_with_policy",
+            "единственный построитель `ibcmd` к базе проекта; `build_ibcmd_dsl` делегирует ему, зонд поколения несёт свой предел (шов 4а форка)",
         ),
     ];
     let expected = BUILT_FOR_IBCMD
@@ -552,9 +552,10 @@ fn an_ibcmd_connection_is_built_only_where_ibcmd_runs() {
 
 /// Reintroduction guard каталога данных. Корень: каждый сценарий строил `ibcmd` сам и мог
 /// забыть `--data`, а умолчательный каталог один на пользователя, поэтому запуски в разных
-/// проектах отказывали друг другу (`rc=254`). Владелец теперь один —
-/// `dump_config::helpers::build_ibcmd_dsl`; свой каталог есть только у временной базы. Новый
-/// `IbcmdDsl::new` под любым местным именем роняет проверку.
+/// проектах отказывали друг другу (`rc=254`). Владельцы теперь —
+/// `dump_config::helpers::build_ibcmd_dsl` и его вариант с готовой политикой
+/// `build_ibcmd_dsl_with_policy` (шов 4а форка); свой каталог есть только у временной базы.
+/// Новый `IbcmdDsl::new` под любым местным именем роняет проверку.
 #[test]
 fn an_ibcmd_process_is_built_only_by_those_who_give_it_a_data_directory() {
     assert_eq!(
@@ -563,14 +564,14 @@ fn an_ibcmd_process_is_built_only_by_those_who_give_it_a_data_directory() {
             "crate::platform::ibcmd::IbcmdDsl::new"
         ),
         [
-            "crate::use_cases::dump_config::helpers::build_ibcmd_dsl",
+            "crate::use_cases::dump_config::helpers::build_ibcmd_dsl_with_policy",
             "crate::use_cases::managed_stand::standalone::create_base",
             "crate::use_cases::throwaway_infobase::FileInfobase::ibcmd",
         ]
         .map(str::to_owned)
         .into_iter()
         .collect(),
-        "build ibcmd to the project base through dump_config::helpers::build_ibcmd_dsl"
+        "build ibcmd to the project base through dump_config::helpers::build_ibcmd_dsl_with_policy"
     );
 }
 

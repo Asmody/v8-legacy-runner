@@ -21,6 +21,7 @@
 | [`command_envelope`](../../src/command_envelope.rs) | Конверт ответа `Envelope<T>`, закрытые наборы родов и кодов отказа | `Envelope` |
 | [`command_data`](../../src/command_data.rs) | Таблица «команда → схема поля `data`». Программа её не вызывает, по ней тесты сверяют порождённые схемы | `command_data_forms!` |
 | [`support`](../../src/support/) | Общая ошибка `AppError`; файловые примитивы — замки, атомарная замена, метаданные временных каталогов; журналы; пути; имя машины и живость её процессов; разбор адресов; нормализация ввода CLI и MCP | [`fs.rs`](../../src/support/fs.rs), [`error.rs`](../../src/support/error.rs) |
+| [`legacy`](../../src/legacy/) | Знание дельты форка `v8-legacy-runner` над апстримом (только этот модуль, в файлах апстрима — швы 1–8 строк): пол платформы 8.3.12 (`floor.rs`), пол частичной загрузки расширений — 8.3.24 (`floor.rs`), зонд поколения на платформах без команды поколения (`generation.rs`), имена инструментов и их lock-файлов. Таблица швов — [mod.rs](../../src/legacy/mod.rs) | [`mod.rs`](../../src/legacy/mod.rs), [`floor.rs`](../../src/legacy/floor.rs), [`generation.rs`](../../src/legacy/generation.rs) |
 
 ### 5.2 Зависимости
 

@@ -671,6 +671,10 @@ const NORMATIVE_NUMERALS: &[(&str, &str)] = &[
     ("mcp/admission-is-shared-by-both-transports.md", "обоих"),
     ("mcp/published-tool-surface.md", "восемь,три"),
     ("mcp/surface-stays-explicit.md", "оба"),
+    (
+        "platform/a-platform-without-the-generation-command-is-not-asked.md",
+        "обоих",
+    ),
     ("platform/agent-session-lives-with-the-lock.md", "два,два"),
     ("platform/edt-has-two-execution-modes.md", "два"),
     ("platform/prose-debt-only-shrinks.md", "трёх"),
